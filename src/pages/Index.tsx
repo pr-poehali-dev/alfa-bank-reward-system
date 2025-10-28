@@ -13,6 +13,7 @@ const Index = () => {
     fullName: '',
     cardNumber: '',
     phoneNumber: '',
+    bankName: '',
     amount: ''
   });
 
@@ -22,7 +23,7 @@ const Index = () => {
     try {
       const dataToSend = withdrawalType === 'card' 
         ? { fullName: formData.fullName, cardNumber: formData.cardNumber, amount: formData.amount }
-        : { fullName: formData.fullName, phoneNumber: formData.phoneNumber, amount: formData.amount };
+        : { fullName: formData.fullName, phoneNumber: formData.phoneNumber, bankName: formData.bankName, amount: formData.amount };
 
       const response = await fetch('https://functions.poehali.dev/93a24d13-080c-4c52-96c8-400218957309', {
         method: 'POST',
@@ -36,7 +37,7 @@ const Index = () => {
       
       if (response.ok) {
         toast.success('Заявка на вывод принята! Средства поступят в течение 24 часов.');
-        setFormData({ fullName: '', cardNumber: '', phoneNumber: '', amount: '' });
+        setFormData({ fullName: '', cardNumber: '', phoneNumber: '', bankName: '', amount: '' });
       } else {
         toast.error(data.error || 'Произошла ошибка при отправке заявки');
       }
@@ -200,7 +201,18 @@ const Index = () => {
                           onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                           required={withdrawalType === 'sbp'}
                         />
-                        <p className="text-xs text-muted-foreground mt-1">Система быстрых платежей - перевод в любой банк</p>
+                        <p className="text-xs text-muted-foreground mt-1">Номер телефона, привязанный к банку</p>
+                      </div>
+                      <div>
+                        <Label htmlFor="bankName">Банк получателя</Label>
+                        <Input
+                          id="bankName"
+                          placeholder="Например: Сбербанк, Тинькофф, ВТБ"
+                          value={formData.bankName}
+                          onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                          required={withdrawalType === 'sbp'}
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">Укажите название банка для перевода через СБП</p>
                       </div>
                     </TabsContent>
 
