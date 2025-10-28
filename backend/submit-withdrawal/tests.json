@@ -1,0 +1,35 @@
+{
+  "tests": [
+    {
+      "name": "Valid withdrawal request",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "fullName": "Иванов Иван Иванович",
+        "cardNumber": "1234567890123456",
+        "amount": "500"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Invalid amount - too low",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "fullName": "Петров Петр Петрович",
+        "cardNumber": "9876543210987654",
+        "amount": "50"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
