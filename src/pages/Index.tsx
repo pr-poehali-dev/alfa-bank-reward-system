@@ -230,6 +230,16 @@ const Index = () => {
         </div>
       </section>
 
+      <a 
+        href="https://t.me/your_support_username" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 w-16 h-16 bg-[#0088cc] hover:bg-[#006699] text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 z-50"
+        aria-label="Написать в Telegram"
+      >
+        <Icon name="Send" size={28} />
+      </a>
+
       <footer className="bg-white border-t py-8">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
           <p>© 2024 Альфа-Бонус. Реферальная программа Альфа-Банка</p>
