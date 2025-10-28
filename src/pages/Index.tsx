@@ -36,7 +36,7 @@ const Index = () => {
       const data = await response.json();
       
       if (response.ok) {
-        toast.success('Заявка на вывод принята! Средства поступят в течение 24 часов.');
+        toast.success('Ваша заявка на вывод отправлена! Ожидайте обработки в течение 24 часов.', { duration: 5000 });
         setFormData({ fullName: '', cardNumber: '', phoneNumber: '', bankName: '', amount: '' });
       } else {
         toast.error(data.error || 'Произошла ошибка при отправке заявки');
@@ -243,7 +243,7 @@ const Index = () => {
       </section>
 
       <a 
-        href="https://t.me/your_support_username" 
+        href="https://t.me/Danilyoung140" 
         target="_blank" 
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 w-16 h-16 bg-[#0088cc] hover:bg-[#006699] text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 z-50"
