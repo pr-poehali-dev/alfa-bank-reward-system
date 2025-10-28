@@ -1,12 +1,14 @@
 import json
 import os
 import psycopg2
+import urllib.request
+import urllib.parse
 from typing import Dict, Any
 from decimal import Decimal
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Принимает заявки на вывод средств и сохраняет их в базу данных
+    Business: Принимает заявки на вывод средств через СБП и отправляет уведомления в Telegram
     Args: event - dict с httpMethod, body, queryStringParameters
           context - object с атрибутами: request_id, function_name, function_version
     Returns: HTTP response dict
@@ -40,10 +42,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     body_data = json.loads(event.get('body', '{}'))
     
     full_name = body_data.get('fullName', '').strip()
-    card_number = body_data.get('cardNumber', '').strip()
+    phone_number = body_data.get('phoneNumber', '').strip()
+    bank_name = body_data.get('bankName', '').strip()
     amount = body_data.get('amount')
     
-    if not full_name or not card_number or not amount:
+    if not full_name or not phone_number or not bank_name or not amount:
         return {
             'statusCode': 400,
             'headers': {
@@ -93,8 +96,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     cursor = conn.cursor()
     
     cursor.execute(
-        "INSERT INTO withdrawal_requests (full_name, card_number, amount, status) VALUES (%s, %s, %s, %s) RETURNING id",
-        (full_name, card_number, str(amount_decimal), 'pending')
+        "INSERT INTO withdrawal_requests (full_name, phone_number, bank_name, amount, status) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+        (full_name, phone_number, bank_name, str(amount_decimal), 'pending')
     )
     
     request_id = cursor.fetchone()[0]
@@ -102,6 +105,35 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     cursor.close()
     conn.close()
+    
+    bot_token = os.environ.get('TELEGRAM_BOT_TOKEN', '8381227388:AAFrKamHR3QbNmsi-AfALZlnoi2-xQMW2uA')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID', '8310988244')
+    
+    message = f"""🔔 Новая заявка на вывод #{request_id}
+
+👤 ФИО: {full_name}
+📱 Телефон: {phone_number}
+🏦 Банк: {bank_name}
+💰 Сумма: {amount_decimal} ₽
+
+Статус: Ожидает обработки"""
+    
+    telegram_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    data = {
+        'chat_id': chat_id,
+        'text': message,
+        'parse_mode': 'HTML'
+    }
+    
+    try:
+        req = urllib.request.Request(
+            telegram_url,
+            data=json.dumps(data).encode('utf-8'),
+            headers={'Content-Type': 'application/json'}
+        )
+        urllib.request.urlopen(req)
+    except Exception:
+        pass
     
     return {
         'statusCode': 200,
