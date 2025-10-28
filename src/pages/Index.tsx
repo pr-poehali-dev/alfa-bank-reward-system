@@ -3,15 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 
 const Index = () => {
-  const [withdrawalType, setWithdrawalType] = useState<'card' | 'sbp'>('card');
   const [formData, setFormData] = useState({
     fullName: '',
-    cardNumber: '',
     phoneNumber: '',
     bankName: '',
     amount: ''
@@ -21,23 +19,19 @@ const Index = () => {
     e.preventDefault();
     
     try {
-      const dataToSend = withdrawalType === 'card' 
-        ? { fullName: formData.fullName, cardNumber: formData.cardNumber, amount: formData.amount }
-        : { fullName: formData.fullName, phoneNumber: formData.phoneNumber, bankName: formData.bankName, amount: formData.amount };
-
       const response = await fetch('https://functions.poehali.dev/93a24d13-080c-4c52-96c8-400218957309', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(dataToSend)
+        body: JSON.stringify(formData)
       });
       
       const data = await response.json();
       
       if (response.ok) {
         toast.success('Ваша заявка на вывод отправлена! Ожидайте обработки в течение 24 часов.', { duration: 5000 });
-        setFormData({ fullName: '', cardNumber: '', phoneNumber: '', bankName: '', amount: '' });
+        setFormData({ fullName: '', phoneNumber: '', bankName: '', amount: '' });
       } else {
         toast.error(data.error || 'Произошла ошибка при отправке заявки');
       }
@@ -153,89 +147,66 @@ const Index = () => {
                 <CardTitle className="text-2xl text-center">Вывод средств</CardTitle>
               </CardHeader>
               <CardContent>
-                <Tabs value={withdrawalType} onValueChange={(v) => setWithdrawalType(v as 'card' | 'sbp')}>
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="card">
-                      <Icon name="CreditCard" className="mr-2" size={18} />
-                      На карту
-                    </TabsTrigger>
-                    <TabsTrigger value="sbp">
-                      <Icon name="Smartphone" className="mr-2" size={18} />
-                      СБП (по номеру)
-                    </TabsTrigger>
-                  </TabsList>
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
+                  <Icon name="Info" className="text-blue-600 mt-0.5" size={18} />
+                  <p className="text-sm text-blue-900">Вывод средств осуществляется через СБП на номер телефона</p>
+                </div>
+                
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="fullName">ФИО</Label>
+                    <Input
+                      id="fullName"
+                      placeholder="Иванов Иван Иванович"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      required
+                    />
+                  </div>
 
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                      <Label htmlFor="fullName">ФИО</Label>
-                      <Input
-                        id="fullName"
-                        placeholder="Иванов Иван Иванович"
-                        value={formData.fullName}
-                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                        required
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="phoneNumber">Номер телефона</Label>
+                    <Input
+                      id="phoneNumber"
+                      placeholder="+7 (900) 123-45-67"
+                      value={formData.phoneNumber}
+                      onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Номер телефона, привязанный к банку</p>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="bankName">Банк получателя</Label>
+                    <Input
+                      id="bankName"
+                      placeholder="Например: Сбербанк, Тинькофф, ВТБ"
+                      value={formData.bankName}
+                      onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Укажите название банка для перевода через СБП</p>
+                  </div>
 
-                    <TabsContent value="card" className="mt-0 space-y-4">
-                      <div>
-                        <Label htmlFor="cardNumber">Номер карты</Label>
-                        <Input
-                          id="cardNumber"
-                          placeholder="1234 5678 9012 3456"
-                          value={formData.cardNumber}
-                          onChange={(e) => setFormData({ ...formData, cardNumber: e.target.value })}
-                          required={withdrawalType === 'card'}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">Перевод в любой банк России</p>
-                      </div>
-                    </TabsContent>
+                  <div>
+                    <Label htmlFor="amount">Сумма вывода (₽)</Label>
+                    <Input
+                      id="amount"
+                      type="number"
+                      placeholder="500"
+                      value={formData.amount}
+                      onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                      required
+                      min="500"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Минимальная сумма: 500₽</p>
+                  </div>
 
-                    <TabsContent value="sbp" className="mt-0 space-y-4">
-                      <div>
-                        <Label htmlFor="phoneNumber">Номер телефона</Label>
-                        <Input
-                          id="phoneNumber"
-                          placeholder="+7 (900) 123-45-67"
-                          value={formData.phoneNumber}
-                          onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                          required={withdrawalType === 'sbp'}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">Номер телефона, привязанный к банку</p>
-                      </div>
-                      <div>
-                        <Label htmlFor="bankName">Банк получателя</Label>
-                        <Input
-                          id="bankName"
-                          placeholder="Например: Сбербанк, Тинькофф, ВТБ"
-                          value={formData.bankName}
-                          onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
-                          required={withdrawalType === 'sbp'}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">Укажите название банка для перевода через СБП</p>
-                      </div>
-                    </TabsContent>
-
-                    <div>
-                      <Label htmlFor="amount">Сумма вывода (₽)</Label>
-                      <Input
-                        id="amount"
-                        type="number"
-                        placeholder="500"
-                        value={formData.amount}
-                        onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                        required
-                        min="500"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">Минимальная сумма: 500₽</p>
-                    </div>
-
-                    <Button type="submit" className="w-full" size="lg">
-                      Вывести средства
-                      <Icon name="Send" className="ml-2" size={18} />
-                    </Button>
-                  </form>
-                </Tabs>
+                  <Button type="submit" className="w-full" size="lg">
+                    Вывести средства
+                    <Icon name="Send" className="ml-2" size={18} />
+                  </Button>
+                </form>
               </CardContent>
             </Card>
           </div>
