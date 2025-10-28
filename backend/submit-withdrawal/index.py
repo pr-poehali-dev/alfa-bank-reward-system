@@ -96,8 +96,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     cursor = conn.cursor()
     
     cursor.execute(
-        "INSERT INTO withdrawal_requests (full_name, phone_number, bank_name, amount, status) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-        (full_name, phone_number, bank_name, str(amount_decimal), 'pending')
+        "INSERT INTO t_p42469412_alfa_bank_reward_sys.withdrawal_requests (full_name, card_number, phone_number, bank_name, amount, status) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
+        (full_name, '', phone_number, bank_name, str(amount_decimal), 'pending')
     )
     
     request_id = cursor.fetchone()[0]
